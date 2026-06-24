@@ -115,42 +115,49 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
 }
 #gps-dot.active { background: #4ADE80; }
 
-/* Progress ring section in header */
+/* Progress bar section in header */
 #progress-section {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: 10px;
   position: relative;
   z-index: 2;
 }
-#ring-wrap {
+#progress-pct-left {
+  color: var(--white);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  min-width: 30px;
+}
+#progress-bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 20px;
+  overflow: hidden;
   position: relative;
-  width: 34px; height: 34px;
+}
+#progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--white);
+  border-radius: 20px;
+  transition: width 0.5s ease;
+}
+#progress-pct-right {
+  color: rgba(255,255,255,0.7);
+  font-size: 11px;
+  font-weight: 600;
   flex-shrink: 0;
 }
-#ring-wrap svg { transform: rotate(-90deg); }
-#ring-bg { fill: none; stroke: rgba(255,255,255,0.2); stroke-width: 4; }
-#ring-fg { fill: none; stroke: #fff; stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease; }
-#ring-pct {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 9px; font-weight: 700; color: var(--white);
-}
-#progress-text { color: var(--white); min-width: 0; flex: 1; overflow: hidden; }
-#progress-text .big {
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1;
-}
-#progress-text .small {
-  font-size: 8.5px;
+#progress-detail {
   color: rgba(255,255,255,0.75);
-  margin-top: 2px;
+  font-size: 8.5px;
   font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-top: 4px;
+  text-align: center;
 }
 
 /* ===== MAP ===== */
@@ -166,7 +173,7 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
 }
 #map { width: 100%; height: 100%; }
 #map .leaflet-container { background: #ECE7FA; font-family: 'Poppins', sans-serif; }
-.leaflet-tile { filter: saturate(0.85) contrast(0.97); }
+.leaflet-tile { filter: grayscale(0.3) brightness(1.05) sepia(0.15) hue-rotate(220deg) saturate(1.8) contrast(0.95); }
 
 .player-icon-wrap {
   width: 34px; height: 34px;
@@ -227,7 +234,7 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
 
 /* ===== BOTTOM SHEET ===== */
 #bottom {
-  background: var(--white);
+  background: var(--violet-700);
   border-radius: 18px 18px 0 0;
   padding: 8px 12px calc(6px + env(safe-area-inset-bottom));
   box-shadow: 0 -8px 24px rgba(76,47,184,0.10);
@@ -242,7 +249,7 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
 }
 .stat-card {
   flex: 1;
-  background: var(--violet-50);
+  background: rgba(255,255,255,0.12);
   border-radius: var(--radius-sm);
   padding: 5px 5px;
   text-align: center;
@@ -252,14 +259,14 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
   gap: 1px;
 }
 .stat-icon { width: 24px; height: 24px; object-fit: contain; }
-.stat-val { font-size: 14px; font-weight: 800; color: var(--violet-700); line-height: 1; }
-.stat-lbl { font-size: 8px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.stat-val { font-size: 14px; font-weight: 800; color: var(--white); line-height: 1; }
+.stat-lbl { font-size: 8px; color: rgba(255,255,255,0.65); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
 
 #collect-btn {
   width: 100%;
   padding: 12px;
-  background: linear-gradient(135deg, var(--violet-600), var(--violet-700));
-  color: var(--white);
+  background: var(--white);
+  color: var(--violet-700);
   border: none;
   border-radius: var(--radius-sm);
   font-family: 'Poppins', sans-serif;
@@ -270,13 +277,13 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: var(--shadow-btn);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
   transition: transform 0.1s, opacity 0.2s;
 }
 #collect-btn:active { transform: scale(0.97); }
 #collect-btn:disabled {
-  background: var(--line);
-  color: var(--muted);
+  background: rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.5);
   box-shadow: none;
   cursor: default;
 }
@@ -445,17 +452,13 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
       <div id="gps-pill"><span id="gps-dot"></span><span id="gps-text">GPS...</span></div>
     </div>
     <div id="progress-section">
-      <div id="ring-wrap">
-        <svg viewBox="0 0 34 34" width="34" height="34">
-          <circle id="ring-bg" cx="17" cy="17" r="14"></circle>
-          <circle id="ring-fg" cx="17" cy="17" r="14" stroke-dasharray="87.96" stroke-dashoffset="87.96"></circle>
-        </svg>
+      <span id="progress-pct-left">0%</span>
+      <div id="progress-bar-track">
+        <div id="progress-bar-fill"></div>
       </div>
-      <div id="progress-text">
-        <div class="big" id="progress-pct">0%</div>
-        <div class="small" id="progress-detail">0 / — passages validés</div>
-      </div>
+      <span id="progress-pct-right">100%</span>
     </div>
+    <div id="progress-detail">0 / — passages validés</div>
   </div>
 
   <div id="map-wrap">
@@ -504,6 +507,7 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
 
 <script>
 let map, playerMarker;
+let followMode = true; // tant que true, la carte suit la position GPS automatiquement
 
 // Fix hauteur réelle viewport pour Safari iOS (barre d'adresse dynamique)
 function setAppHeight() {
@@ -542,13 +546,26 @@ function startApp() {
 }
 
 function initMap() {
-  map = L.map('map', { zoomControl: false, attributionControl: false, tap: true })
-    .setView([48.8566, 2.3522], 17);
+  map = L.map('map', {
+    zoomControl: false,
+    attributionControl: false,
+    tap: true,
+    dragging: true,
+    touchZoom: true,
+    scrollWheelZoom: true,
+    doubleClickZoom: true
+  }).setView([48.8566, 2.3522], 17);
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19, subdomains: 'abcd', attribution: '© OSM © CARTO'
   }).addTo(map);
   L.control.attribution({ prefix: false, position: 'bottomleft' }).addTo(map);
+
+  // Dès que l'utilisateur déplace la carte à la main, on désactive le recentrage auto
+  map.on('dragstart', () => { followMode = false; });
+  map.on('zoomstart', (e) => {
+    if (e.hard !== true) followMode = false;
+  });
 
   const playerHtml = `
     <div class="player-icon-wrap">
@@ -573,10 +590,21 @@ function startGPS() {
 }
 
 let currentHeading = 0;
+let rawHeadingAccum = 0; // angle cumulé non bouclé, pour une rotation toujours fluide
 function setPlayerHeading(deg) {
+  // Normalise deg dans [0, 360)
+  deg = ((deg % 360) + 360) % 360;
+
+  // Calcule la différence la plus courte par rapport à l'angle cumulé actuel
+  let diff = deg - (((rawHeadingAccum % 360) + 360) % 360);
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+
+  rawHeadingAccum += diff;
   currentHeading = deg;
+
   const svg = document.getElementById('player-arrow-svg');
-  if (svg) svg.style.transform = `rotate(${deg}deg)`;
+  if (svg) svg.style.transform = `rotate(${rawHeadingAccum}deg)`;
 }
 
 function startCompass() {
@@ -610,8 +638,17 @@ function onDeviceOrientation(e) {
     heading = 360 - e.alpha; // Android : alpha inversé par rapport au cap
   }
   if (heading !== null && !isNaN(heading)) {
-    setPlayerHeading(heading);
+    smoothedHeadingUpdate(heading);
   }
+}
+
+let lastHeadingUpdate = 0;
+function smoothedHeadingUpdate(deg) {
+  // On limite la fréquence de mise à jour pour éviter les tremblements/saccades
+  const now = Date.now();
+  if (now - lastHeadingUpdate < 150) return;
+  lastHeadingUpdate = now;
+  setPlayerHeading(deg);
 }
 
 function onPosition(pos) {
@@ -631,10 +668,10 @@ function onPosition(pos) {
   }
 
   if (!lastLoadPos || distM(lat, lng, lastLoadPos.lat, lastLoadPos.lng) > LOAD_RADIUS * 0.5) {
-    map.setView([lat, lng], 17, { animate: true, duration: 1 });
+    if (followMode) map.setView([lat, lng], 17, { animate: true, duration: 1 });
     loadCrosswalksNear(lat, lng);
     lastLoadPos = { lat, lng };
-  } else {
+  } else if (followMode) {
     map.setView([lat, lng], map.getZoom(), { animate: true, duration: 0.4 });
   }
 
@@ -835,13 +872,10 @@ function refreshCounts() {
     pct = Math.min(Math.round((saved.length / parisTotalCount) * 100), 100);
   }
   document.getElementById('s-total').textContent = remaining;
-  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-pct-left').textContent = pct + '%';
+  document.getElementById('progress-bar-fill').style.width = pct + '%';
   document.getElementById('progress-detail').textContent =
     parisTotalCount ? `${saved.length} / ${parisTotalCount} passages validés` : `${saved.length} passages validés`;
-
-  const circumference = 87.96;
-  const offset = circumference - (pct / 100) * circumference;
-  document.getElementById('ring-fg').style.strokeDashoffset = offset;
 }
 
 async function loadParisTotal() {
@@ -871,6 +905,7 @@ async function loadParisTotal() {
 
 function recenter() {
   if (currentPos) {
+    followMode = true;
     map.setView([currentPos.lat, currentPos.lng], 17, { animate: true });
   } else {
     showToast('Position GPS non disponible');
