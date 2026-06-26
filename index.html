@@ -1001,14 +1001,16 @@ function updateNearby() {
 
 function collectNearby() {
   if (nearbyIds.length === 0) return;
-  openModal(nearbyIds[0]);
+  openModal(nearbyIds[0], true); // true = ouvert via le bouton du bas, validation stricte
 }
 
 /* ===== MODAL : ouverture / fermeture / confirmation ===== */
-function openModal(id) {
+let modalViaButton = false;
+function openModal(id, viaButton) {
   const cw = crosswalks.get(id);
   if (!cw) return;
   modalTargetId = id;
+  modalViaButton = !!viaButton;
 
   const overlay = document.getElementById('modal-overlay');
   const title = document.getElementById('modal-title');
@@ -1050,21 +1052,28 @@ function confirmModalAction() {
 
   if (cw.collected) {
     uncollect(id);
+    closeModal();
   } else {
-    tryCollect(id);
+    const success = tryCollect(id, modalViaButton);
+    if (success) closeModal();
+    // si échec (trop loin), on laisse le modal ouvert avec le toast affiché derrière,
+    // mais on referme tout de même pour ne pas bloquer l'utilisateur
+    else closeModal();
   }
-  closeModal();
 }
 
-function tryCollect(id) {
+const STRICT_VALIDATION_M = 8; // tolérance "pile dessus" pour le bouton du bas
+
+function tryCollect(id, strict) {
   const cw = crosswalks.get(id);
-  if (!cw || cw.collected) return;
+  if (!cw || cw.collected) return false;
 
   if (currentPos) {
     const dist = distM(currentPos.lat, currentPos.lng, cw.lat, cw.lng);
-    if (dist > RADIUS_M * 2) {
+    const maxDist = strict ? STRICT_VALIDATION_M : RADIUS_M;
+    if (dist > maxDist) {
       showToast('Trop loin — approche-toi du passage');
-      return;
+      return false;
     }
   }
 
@@ -1097,6 +1106,7 @@ function tryCollect(id) {
   if (total % 1000 === 0) {
     showCelebration(total);
   }
+  return true;
 }
 
 function showCelebration(total) {
