@@ -69,6 +69,11 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
   position: relative;
   z-index: 2;
 }
+#header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 #brand {
   display: flex;
   align-items: center;
@@ -149,6 +154,26 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
 #level-text strong {
   font-weight: 800;
   font-size: 15px;
+}
+#info-btn {
+  position: absolute;
+  top: 58px;
+  right: 16px;
+  width: 26px; height: 26px;
+  background: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  animation: infoBlink 2.4s ease-in-out infinite;
+  z-index: 5;
+}
+#info-btn img { width: 15px; height: 15px; }
+@keyframes infoBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
 }
 #progress-detail {
   color: rgba(255,255,255,0.75);
@@ -520,6 +545,83 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
   font-weight: 700;
   cursor: pointer;
 }
+
+/* ===== INFO POPUP ===== */
+#info-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26,21,48,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  padding: 24px;
+}
+#info-overlay.show { opacity: 1; pointer-events: auto; }
+#info-card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+  transform: scale(0.92);
+  transition: transform 0.2s;
+}
+#info-overlay.show #info-card { transform: scale(1); }
+#info-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 28px; height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--ink);
+  cursor: pointer;
+}
+#info-text {
+  margin-top: 36px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink);
+  text-align: center;
+}
+.info-inline-link {
+  color: var(--violet-700);
+  font-weight: 700;
+  text-decoration: none;
+}
+#info-portfolio-link {
+  display: block;
+  margin-top: 16px;
+  text-align: center;
+  padding: 11px;
+  background: var(--violet-50);
+  color: var(--violet-700);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+#info-reset-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#info-reset-icon { font-size: 14px; }
 </style>
 </head>
 <body>
@@ -537,7 +639,9 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
       <div id="brand">
         <div id="brand-name" ontouchstart="startLongPress()" ontouchend="cancelLongPress()" onmousedown="startLongPress()" onmouseup="cancelLongPress()" onmouseleave="cancelLongPress()">Walko</div>
       </div>
-      <div id="gps-pill"><span id="gps-dot"></span><span id="gps-text">GPS...</span></div>
+      <div id="header-right">
+        <div id="gps-pill"><span id="gps-dot"></span><span id="gps-text">GPS...</span></div>
+      </div>
     </div>
     <div id="progress-label">Progression</div>
     <div id="progress-section">
@@ -547,6 +651,9 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
       <div id="level-text">niv <strong id="level-num">1</strong></div>
     </div>
     <div id="progress-detail">0 / — passages validés</div>
+    <div id="info-btn" onclick="openInfoPopup()">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAABR1BMVEUAAABsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+BsT+DH6ks0AAAAbHRSTlMAAAECEC1QcIqaonEuF0+Syer768qTAyqA0PnRgSsjieMkC2TYZSL4/vHaw7Go26M7qWg4GwwFp+JJ3f3PdCcmc/xK3xmtrPMP8GrXFky73i9/GM4apShpssQ5DX7VYvqdnHXhiNYVRvRrOmMSb+ulAAADHUlEQVRYw+1XWVsaMRTlAKJMARF1VDrsClIWF2BKVay7iLjVra1ba11b/v9zTabUWZIh8vnW5vHMnZPkricOx/9lv+B8WujuV5e7x9Pb55Ukb98bj8/twss29gf6gwOh1p8VGhwa9viFjwJ5ZHQs3DKt8FslIkNo92gs3mKueCzR+RRIpsZb3DU+kYQtBZCWMm3ryey7XL5QyOeK2ck2lplK2zEA00Ptv+Mzs6VyRXW51Eq5NPu+2uYYmuYzAB/mNKv5hdqi+mwIqB+XFpa1b3MrPAZgparZrNbWzEbAWm1V+1rlMDydX9s/tO5jORtO34aWGXPMWwBR7f6bSp23Q13Z1PwQZVggKdGPWw2V7yS1sUWNpCSs9BM0+TYbdukGuUHPkElZjoDENvmyrOj3B5o7O029LVSFBmM7YXayM0bPtlHXf0B6NxTaTRug+gY1jJn8jAiN4N6+YTuMEvDAiO3v0VhGYPSAQtOvZrgaXFMEnTL0AqBGk1Ixmn4aI+DhkZHWdUzQY2MzwdEhQcf8BoIADYHxADwC1Gh/CBguNkzvdWJyDJPAgRPqr37dbnAHCVRQxQjUAoGDbh2Bb5BApxAjwCmBB3p0BB5SJdmSOTnYBA6UsqTmPLpy7yWGxbIoQblI8N6/Bwb6CJCriBJUcjQZdQReAuRVUQI1T3DvM4GTVnJBFiWQaRgk5+sRvPgKn01X4DqRUUzUiV/MTuSEEQeWcmaGkZdIrIZC4a80kQL6VB5gpTKjpfFSmV1M3N48YykmdjmTgDWbli7NKGdOQ3Hg7Pzi4vzMXIy0oWQCAi0Nl1et1tUlBFoau6niG0G/m8Br2lRHTbTstn7Abes/IhAbLOEwe7DcmAc4Eres0XZ3f3/HGm23CUtskKLi6OHRfrg+PnCG6/N4f+xuvBOBFhQVGME0W6J0lDjrdhKHirS2yLruRmTZy7zFpYX5TjKPGP7UCc1TIjRlmQrNQlxEaFqkbtEqdaW0vVh+iuavbRuxnUp2luvO6E2VJ/ejQo8O7oNjRBZ+szCePAG/84XPJvLoinX56HqNZ9+/tH4DJgxyR3FVXp0AAAAASUVORK5CYII=" alt="">
+    </div>
   </div>
 
   <div id="map-wrap">
@@ -604,6 +711,22 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
     <div id="celebration-title">Palier atteint !</div>
     <div id="celebration-sub" id="celebration-sub-text">1 000 passages validés</div>
     <button id="celebration-close" onclick="closeCelebration()">Continuer</button>
+  </div>
+</div>
+
+<div id="info-overlay">
+  <div id="info-card">
+    <div id="info-close" onclick="closeInfoPopup()">✕</div>
+    <p id="info-text">
+      Merci de votre participation à cette expérience sociale.<br><br>
+      Envoyez-moi vos scores sur Instagram, et n'hésitez pas à consulter mon portfolio.<br><br>
+      Créée par <a href="https://www.instagram.com/_monk.exe/" target="_blank" rel="noopener noreferrer" class="info-inline-link">monk.exe</a>.
+    </p>
+    <a id="info-portfolio-link" href="https://www.alexisbellay.fr/" target="_blank" rel="noopener noreferrer">Voir le portfolio →</a>
+    <div id="info-reset-row" onclick="openResetModal()">
+      <span id="info-reset-icon">⟲</span>
+      <span>Réinitialiser mon score</span>
+    </div>
   </div>
 </div>
 
@@ -1174,7 +1297,16 @@ function startLongPress() {
 function cancelLongPress() {
   if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
 }
+/* ===== INFO POPUP ===== */
+function openInfoPopup() {
+  document.getElementById('info-overlay').classList.add('show');
+}
+function closeInfoPopup() {
+  document.getElementById('info-overlay').classList.remove('show');
+}
+
 function openResetModal() {
+  closeInfoPopup();
   modalTargetId = 'RESET_ALL';
   const overlay = document.getElementById('modal-overlay');
   const title = document.getElementById('modal-title');
