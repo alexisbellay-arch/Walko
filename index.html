@@ -681,7 +681,7 @@ function initMap() {
     zoomControl: false,
     attributionControl: false,
     tap: true,
-    dragging: true,
+    dragging: false,
     touchZoom: true,
     scrollWheelZoom: true,
     doubleClickZoom: true
@@ -718,44 +718,76 @@ function initMap() {
   const playerDiv = L.divIcon({ className: '', html: playerHtml, iconSize: [34,34], iconAnchor: [17,17] });
   playerMarker = L.marker([48.8566, 2.3522], { icon: playerDiv, zIndexOffset: 1000 }).addTo(map);
 
-  setupMapRotation();
+  setupMapGestures();
 }
 
 let mapRotationDeg = 0;
 
-function setupMapRotation() {
+function setupMapGestures() {
   const wrapEl = document.getElementById('map-wrap');
   const mapEl = document.getElementById('map');
   if (!wrapEl || !mapEl) return;
 
+  let mode = null; // 'pan' ou 'rotate'
   let startAngle = null;
   let startRotation = 0;
+  let panLastPoint = null;
 
   function angleBetween(t0, t1) {
     return Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX) * (180 / Math.PI);
   }
 
+  // Fait tourner un vecteur (dx, dy) de -angleDeg degrés, pour compenser la rotation visuelle de la carte
+  function rotateVector(dx, dy, angleDeg) {
+    const rad = -angleDeg * Math.PI / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    return {
+      x: dx * cos - dy * sin,
+      y: dx * sin + dy * cos
+    };
+  }
+
   wrapEl.addEventListener('touchstart', (e) => {
     if (e.touches.length === 2) {
+      mode = 'rotate';
       startAngle = angleBetween(e.touches[0], e.touches[1]);
       startRotation = mapRotationDeg;
       mapEl.classList.add('rotating');
+      panLastPoint = null;
+    } else if (e.touches.length === 1) {
+      mode = 'pan';
+      panLastPoint = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      followMode = false;
     }
   }, { passive: true });
 
   wrapEl.addEventListener('touchmove', (e) => {
-    if (e.touches.length === 2 && startAngle !== null) {
+    if (mode === 'rotate' && e.touches.length === 2 && startAngle !== null) {
       const currentAngle = angleBetween(e.touches[0], e.touches[1]);
       const delta = currentAngle - startAngle;
       mapRotationDeg = startRotation + delta;
       mapEl.style.transform = `rotate(${mapRotationDeg}deg)`;
+    } else if (mode === 'pan' && e.touches.length === 1 && panLastPoint) {
+      e.preventDefault();
+      const point = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      const dx = point.x - panLastPoint.x;
+      const dy = point.y - panLastPoint.y;
+      // On compense la rotation visuelle pour que le geste reste intuitif
+      const compensated = rotateVector(dx, dy, mapRotationDeg);
+      map.panBy([-compensated.x, -compensated.y], { animate: false });
+      panLastPoint = point;
     }
-  }, { passive: true });
+  }, { passive: false });
 
   wrapEl.addEventListener('touchend', (e) => {
     if (e.touches.length < 2) {
       startAngle = null;
       mapEl.classList.remove('rotating');
+    }
+    if (e.touches.length === 0) {
+      mode = null;
+      panLastPoint = null;
     }
   }, { passive: true });
 }
