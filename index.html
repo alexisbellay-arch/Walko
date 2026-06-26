@@ -1186,7 +1186,7 @@ function closeModal() {
 
 function confirmModalAction() {
   const id = modalTargetId;
-  if (!id) return;
+  if (!id) { showToast('DEBUG: pas de modalTargetId'); return; }
 
   if (id === 'RESET_ALL') {
     resetAll();
@@ -1195,17 +1195,15 @@ function confirmModalAction() {
   }
 
   const cw = crosswalks.get(id);
-  if (!cw) { closeModal(); return; }
+  if (!cw) { showToast('DEBUG: passage introuvable id=' + id); closeModal(); return; }
 
   if (cw.collected) {
     uncollect(id);
     closeModal();
   } else {
     const success = tryCollect(id, modalViaButton);
-    if (success) closeModal();
-    // si échec (trop loin), on laisse le modal ouvert avec le toast affiché derrière,
-    // mais on referme tout de même pour ne pas bloquer l'utilisateur
-    else closeModal();
+    showToast('DEBUG: tryCollect success=' + success + ' strict=' + modalViaButton);
+    closeModal();
   }
 }
 
