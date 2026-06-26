@@ -51,6 +51,13 @@ html, body {
   height: 100dvh;
   position: relative;
   overflow: hidden;
+  opacity: 0;
+  transform: scale(0.97);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+#app.entering {
+  opacity: 1;
+  transform: scale(1);
 }
 html.js-vh-fix #app { height: var(--app-height, 100vh); }
 
@@ -373,18 +380,6 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
   padding: 24px;
   text-align: center;
 }
-#iris-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--violet-700);
-  z-index: 10000;
-  pointer-events: none;
-  clip-path: circle(0% at 50% 50%);
-}
-#iris-overlay.animating {
-  transition: clip-path 0.6s cubic-bezier(0.65, 0, 0.35, 1);
-  clip-path: circle(150% at 50% 50%);
-}
 #loading-mark {
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 4px;
@@ -661,11 +656,9 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
 <body>
 
 <!-- LOADING -->
-<div id="iris-overlay"></div>
-
 <div id="loading">
   <h1>Walko</h1>
-  <button id="start-btn" onclick="startApp(false, event)">Commencer</button>
+  <button id="start-btn" onclick="startApp()">Commencer</button>
 </div>
 
 <!-- APP -->
@@ -794,50 +787,36 @@ const FRANCE_BOUNDS = { south: 41.0, west: -5.5, north: 51.5, east: 9.8 };
 
 let demoMode = false;
 
-function startApp(demo, clickEvent) {
+function startApp(demo) {
   demoMode = !!demo;
 
   const loadingEl = document.getElementById('loading');
   const appEl = document.getElementById('app');
-  const irisEl = document.getElementById('iris-overlay');
 
-  // Le cercle part du point où le bouton a été cliqué (ou centre de l'écran à défaut)
-  let originX = 50, originY = 50;
-  if (clickEvent) {
-    originX = (clickEvent.clientX / window.innerWidth) * 100;
-    originY = (clickEvent.clientY / window.innerHeight) * 100;
+  loadingEl.style.transition = 'opacity 0.3s ease';
+  loadingEl.style.opacity = '0';
+
+  appEl.style.display = 'flex';
+
+  initMap();
+  if (demoMode) {
+    startDemoMode();
+  } else {
+    startGPS();
   }
-  irisEl.style.clipPath = `circle(0% at ${originX}% ${originY}%)`;
+  refreshCounts();
 
-  // Phase 1 : le cercle violet grossit pour recouvrir tout l'écran
+  // On laisse le navigateur peindre l'app à sa taille réelle (pour que Leaflet s'initialise
+  // correctement) avant de déclencher l'animation purement visuelle de fade + zoom léger.
   requestAnimationFrame(() => {
-    irisEl.classList.add('animating');
-    irisEl.style.clipPath = `circle(150% at ${originX}% ${originY}%)`;
+    requestAnimationFrame(() => {
+      appEl.classList.add('entering');
+    });
   });
 
-  // Une fois l'écran totalement recouvert : on bascule le contenu en dessous, invisible pour l'utilisateur
   setTimeout(() => {
     loadingEl.style.display = 'none';
-    appEl.style.display = 'flex';
-
-    initMap();
-    if (demoMode) {
-      startDemoMode();
-    } else {
-      startGPS();
-    }
-    refreshCounts();
-
-    // Phase 2 : le cercle se rétrécit pour révéler l'app
-    irisEl.style.transition = 'clip-path 0.6s cubic-bezier(0.65, 0, 0.35, 1)';
-    irisEl.style.clipPath = `circle(0% at ${originX}% ${originY}%)`;
-  }, 600);
-
-  // Nettoyage final, l'overlay iris redevient transparent/inerte
-  setTimeout(() => {
-    irisEl.classList.remove('animating');
-    irisEl.style.transition = '';
-  }, 1250);
+  }, 300);
 }
 
 function startDemoMode() {
