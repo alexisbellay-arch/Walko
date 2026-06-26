@@ -235,7 +235,7 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
 #bottom {
   background: var(--white);
   border-radius: 18px 18px 0 0;
-  padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+  padding: 14px 14px calc(4px + env(safe-area-inset-bottom));
   box-shadow: 0 -8px 24px rgba(76,47,184,0.10);
   z-index: 200;
   flex-shrink: 0;
@@ -243,8 +243,8 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
   position: relative;
 }
 #bottom-extra {
-  margin-top: 14px;
-  min-height: 1px;
+  margin-top: 0;
+  min-height: 0;
 }
 #stats-row {
   display: flex;
