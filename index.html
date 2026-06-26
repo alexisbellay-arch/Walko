@@ -51,6 +51,13 @@ html, body {
   height: 100dvh;
   position: relative;
   overflow: hidden;
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+}
+#app.entering {
+  transform: scale(1);
+  opacity: 1;
 }
 html.js-vh-fix #app { height: var(--app-height, 100vh); }
 
@@ -372,6 +379,11 @@ html.js-vh-fix #app { height: var(--app-height, 100vh); }
   z-index: 9999;
   padding: 24px;
   text-align: center;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.45s ease;
+}
+#loading.leaving {
+  transform: translateY(-100%);
+  opacity: 0;
 }
 #loading-mark {
   display: flex; align-items: center; justify-content: center;
@@ -782,8 +794,24 @@ let demoMode = false;
 
 function startApp(demo) {
   demoMode = !!demo;
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
+
+  const loadingEl = document.getElementById('loading');
+  const appEl = document.getElementById('app');
+
+  // L'app est déjà affichée en dessous (opacity 0, légèrement zoomée) pour permettre la transition
+  appEl.style.display = 'flex';
+
+  // On lance la transition au prochain frame pour que le navigateur prenne en compte l'état initial
+  requestAnimationFrame(() => {
+    loadingEl.classList.add('leaving');
+    appEl.classList.add('entering');
+  });
+
+  // Une fois la transition de la page d'accueil terminée, on la retire complètement du DOM visuel
+  setTimeout(() => {
+    loadingEl.style.display = 'none';
+  }, 500);
+
   initMap();
   if (demoMode) {
     startDemoMode();
